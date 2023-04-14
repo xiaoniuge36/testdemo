@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        .tab-container {
+            display: flex;
+        }
+
+        .tab {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-bottom: none;
+            cursor: move;
+        }
+
+        .tab:last-child {
+            border-bottom: 1px solid #ccc;
+        }
+
+        .dragging {
+            opacity: 0.5;
+        }
+
+        .before {
+            border-left: 2px solid red;
+        }
+
+        .after {
+            border-right: 2px solid red;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="tab-container">
+        <div class="tab" draggable="true">选项卡1</div>
+        <div class="tab" draggable="true">选项卡2</div>
+        <div class="tab" draggable="true">选项卡3</div>
+    </div>
+
+</body>
+
+<script>
+    const tabs = document.querySelectorAll('.tab'); // 获取所有选项卡
+
+    let tabDragging = null; // 正在拖拽的选项卡
+
+    function onDragStart(e) { // 拖拽开始
+        tabDragging = this; // 记录正在拖拽的选项卡
+        e.dataTransfer.effectAllowed = 'move'; // 设置拖拽效果
+        this.classList.add('dragging'); // 添加拖拽样式
+    }
+
+    function onDragOver(e) { // 拖拽过 程中
+        e.preventDefault(); // 阻止默认事件
+        const rect = this.getBoundingClientRect(); // 获取选项卡的位置信息
+        const offsetX = e.clientX - rect.left; // 计算鼠标相对于选项卡的位置
+        if (offsetX < rect.width / 2) { // 如果鼠标在选项卡的左半部分
+            this.classList.add('before'); // 添加before样式
+            this.classList.remove('after'); // 移除after样式
+        } else { // 如果鼠标在选项卡的右半部分
+            this.classList.add('after'); // 添加after样式
+            this.classList.remove('before'); // 移除before样式
+        }
+    }
+
+    // 核心逻辑，比较鼠标位置减去宽度左侧位置与宽度一般对比
+    function onDrop(e) { // 拖拽结束
+        e.preventDefault(); // 阻止默认事件
+        if (tabDragging && tabDragging !== this) { // 如果正在拖拽的选项卡存在并且不是当前选项卡
+            const tabDraggingsz = tabDragging.getBoundingClientRect();
+            const offsetX = e.clientX - tabDraggingsz.left; // 计算鼠标相对于选项卡的位置
+            if (offsetX < tabDraggingsz.width / 2) { // 如果鼠标在选项卡的左半部分
+                this.parentNode.insertBefore(tabDragging, this); // 将正在拖拽的选项卡插入到当前选项卡的前面
+            } else { // 如果鼠标在选项卡的右半部分
+                this.parentNode.insertBefore(tabDragging, this.nextSibling); // 将正在拖拽的选项卡插入到当前选项卡的后面
+            }
+            this.classList.remove('before', 'after'); // 移除before和after样式
+        }
+        tabDragging = null; // 清空正在拖拽的选项卡
+        this.classList.remove('before', 'after'); // 移除before和after样式
+    }
+    tabs.forEach(tab => { // 给每个选项卡添加事件
+        tab.addEventListener('dragstart', onDragStart); // 拖拽开始
+        tab.addEventListener('dragover', onDragOver); // 拖拽过程中
+        tab.addEventListener('drop', onDrop); // 拖拽结束
+        tab.addEventListener('dragend', () => { // 拖拽结束
+            tab.classList.remove('dragging'); // 移除拖拽样式
+        });
+    });
+</script>
+
+</html>
