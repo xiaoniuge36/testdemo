@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lazy Loading Demo</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        .list-container {
+            width: 100%;
+            max-height: 400px;
+            border: 1px solid #000;
+            overflow-y: scroll;
+        }
+
+        .item {
+            height: 30px;
+            padding: 5px 10px;
+            box-sizing: border-box;
+            border-bottom: 1px solid #eee;
+        }
+
+        .item:nth-child(even) {
+            background-color: #f8f8f8;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="list-container" id="listContainer">
+        <!-- Items will be added dynamically -->
+    </div>
+    <script>
+        const ITEM_COUNT = 100000; // 设置选项卡的数量
+        const listContainer = document.getElementById("listContainer"); // 获取滚动容器
+
+        function renderItem(index) { // 渲染选项卡
+            const item = document.createElement("div"); // 创建选项卡元素
+            item.className = "item"; // 设置选项卡的类名
+            item.innerText = `Item ${index + 1}`; // 设置选项卡的文本
+            item.dataset.index = index; // 设置选项卡的索引
+            return item; // 返回选项卡元素
+        }
+
+        function isItemInViewport(item) { // 判断选项卡是否在视口中
+            const rect = item.getBoundingClientRect(); // 获取选项卡的边界矩形
+            const windowHeight = (window.innerHeight || document.documentElement.clientHeight); // 获取视口的高度
+            const windowWidth = (window.innerWidth || document.documentElement.clientWidth); // 获取视口的宽度
+            // 判断选项卡的上下边界是否在视口中
+            return (
+                (rect.top >= 0 && rect.top <= windowHeight) ||
+                (rect.bottom >= 0 && rect.bottom <= windowHeight)
+            ) && (
+                    (rect.left >= 0 && rect.left <= windowWidth) ||
+                    (rect.right >= 0 && rect.right <= windowWidth)
+                );
+        }
+
+        function lazyLoadItems() { // 懒加载选项卡
+            const items = listContainer.querySelectorAll('.item:not([data-loaded])'); // 获取未加载的选项卡
+
+            items.forEach(item => { // 遍历选项卡
+                if (isItemInViewport(item)) { // 判断选项卡是否在视口中
+                    setTimeout(() => { // 设置延迟加载
+                        item.dataset.loaded = "true"; // 设置选项卡的加载状态
+                        item.textContent = `Item ${parseInt(item.dataset.index, 10) + 1} (loaded)`; // 设置选项卡的文本
+                    }, 200); // 延迟时间
+                }
+            });
+        }
+
+        function initList() { // 初始化选项卡列表
+            const fragment = document.createDocumentFragment(); // 创建文档片段
+            for (let i = 0; i < ITEM_COUNT; i++) { // 遍历选项卡
+                fragment.appendChild(renderItem(i)); // 添加选项卡到文档片段
+            }
+            listContainer.appendChild(fragment); // 添加文档片段到滚动容器
+            lazyLoadItems(); // 懒加载选项卡
+        }
+
+        listContainer.addEventListener("scroll", () => {    // 监听滚动事件
+            requestAnimationFrame(lazyLoadItems); // 懒加载选项卡
+        });
+
+        initList(); // 初始化选项卡列表
+    </script>
+</body>
+
+</html>

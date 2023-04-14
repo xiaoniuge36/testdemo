@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virtual Scrolling Demo</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        .viewport {
+            width: 100%;
+            height: 400px;
+            border: 1px solid #000;
+            overflow-y: scroll;
+            position: relative;
+        }
+
+        .item {
+            height: 30px;
+            padding: 5px 10px;
+            box-sizing: border-box;
+            border-bottom: 1px solid #eee;
+        }
+
+        .item:nth-child(even) {
+            background-color: #f8f8f8;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="viewport" id="viewport">
+        <div class="scroll-container" id="scrollContainer">
+        </div>
+    </div>
+    <script>
+        const ITEM_HEIGHT = 30; // 设置每个选项卡的高度
+        const ITEM_COUNT = 100000; // 设置选项卡的数量
+        const viewport = document.getElementById("viewport"); // 获取视口
+        const scrollContainer = document.getElementById("scrollContainer"); // 获取滚动容器
+
+        scrollContainer.style.height = `${ITEM_COUNT * ITEM_HEIGHT}px`; // 设置滚动容器的高度
+
+        function renderItem(index) { // 渲染选项卡
+            const item = document.createElement("div"); // 创建选项卡元素
+            item.className = "item"; // 设置选项卡的类名
+            item.innerText = `Item ${index + 1}`; // 设置选项卡的文本
+            item.style.position = "absolute"; // 设置选项卡的定位方式
+            item.style.top = `${index * ITEM_HEIGHT}px`; // 设置选项卡的顶部位置
+            return item; // 返回选项卡元素
+        }
+
+        function renderItems(start, end) { // 渲染选项卡列表
+            const fragment = document.createDocumentFragment(); // 创建文档片段
+            for (let i = start; i < end; i++) {  // 遍历选项卡
+                fragment.appendChild(renderItem(i)); // 将选项卡添加到文档片段中
+            }
+            return fragment; // 返回文档片段
+        }
+
+        function updateVisibleItems() { // 更新可见选项卡
+            const scrollTop = viewport.scrollTop; // 获取视口的滚动高度
+            const visibleStartIndex = Math.floor(scrollTop / ITEM_HEIGHT); // 计算可见选项卡的起始索引
+            const visibleEndIndex = Math.min(visibleStartIndex + Math.ceil(viewport.clientHeight / ITEM_HEIGHT) + 1, ITEM_COUNT); // 计算可见选项卡的结束索引
+
+            scrollContainer.innerHTML = ""; // 清空滚动容器的内容
+            scrollContainer.appendChild(renderItems(visibleStartIndex, visibleEndIndex)); // 渲染可见选项卡
+        }
+
+        viewport.addEventListener("scroll", () => { // 监听视口的滚动事件
+            requestAnimationFrame(updateVisibleItems); // 更新可见选项卡 requestAnimationFrame() 方法告诉浏览器您希望执行动画，并请求浏览器在下一次重绘之前调用指定的函数来更新动画。
+        });
+
+        updateVisibleItems(); // 更新可见选项卡
+
+    </script>
+</body>
+
+</html>
